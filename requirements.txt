@@ -1,0 +1,7 @@
+discord
+youtube_dl
+PyNaCl
+urllib
+pytube
+json
+lxml
