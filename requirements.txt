@@ -3,5 +3,4 @@ youtube_dl
 PyNaCl
 urllib
 pytube
-json
-lxml
+bs4
