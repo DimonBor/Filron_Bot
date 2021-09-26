@@ -31,7 +31,6 @@ ffmpeg_options = {
 
 queue = {}
 now_playing = {}
-players = {}
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 class YTDLSource(discord.PCMVolumeTransformer):
