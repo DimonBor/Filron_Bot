@@ -1,5 +1,6 @@
 discord
 youtube_dl
+requests
 PyNaCl
 urllib
 pytube
