@@ -2,9 +2,7 @@ import os
 import re
 import asyncio
 import discord
-import urllib
 import random
-import time
 import requests
 import youtube_dl
 from pytube import Playlist
