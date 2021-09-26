@@ -172,6 +172,7 @@ class Music(commands.Cog):
         await ctx.send("```diff\n- Queue cleared\n```")
         ctx.voice_client.stop()
 
+
     @commands.command(description="stops and disconnects the bot from voice")
     async def leave(self, ctx):
         global queue
@@ -188,18 +189,19 @@ class Music(commands.Cog):
     @add.before_invoke
     @shuffle.before_invoke
     @skip.before_invoke
+    @jump.before_invoke
     @clear.before_invoke
     @leave.before_invoke
     @queue.before_invoke
     async def ensure_voice(self, ctx):
+        if not ctx.author.voice:
+            await ctx.send("```css\n[You are not connected to a voice channel]\n```")
+            raise commands.CommandError("Author not connected to a voice channel.")
         if ctx.voice_client is None:
-            if ctx.author.voice:
-                queue[ctx.message.channel.id] = []
-                now_playing[ctx.message.channel.id] = ""
-                await ctx.author.voice.channel.connect()
-            else:
-                await ctx.send("```css\n[You are not connected to a voice channel]\n```")
-                raise commands.CommandError("Author not connected to a voice channel.")
+            queue[ctx.message.channel.id] = []
+            now_playing[ctx.message.channel.id] = ""
+            await ctx.author.voice.channel.connect()
+
 
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("-"),
