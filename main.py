@@ -203,7 +203,6 @@ class Music(commands.Cog):
             await ctx.author.voice.channel.connect()
 
 
-
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("-"),
                    description='Spizsheno s primera')
 
