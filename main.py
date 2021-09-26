@@ -1,17 +1,15 @@
 import os
+import re
 import asyncio
 import discord
 import urllib
 import random
+import time
 import requests
 import youtube_dl
 from pytube import Playlist
 from discord.ext import commands
 from bs4 import BeautifulSoup
-
-
-# Suppress noise about console usage from errors
-youtube_dl.utils.bug_reports_message = lambda: ''
 
 BOT_TOKEN = os.getenv("DISCORD_TOKEN")
 
@@ -35,9 +33,8 @@ ffmpeg_options = {
 
 queue = {}
 now_playing = {}
-tasks = {}
+players = {}
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
-coro = asyncio.sleep(1)
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
@@ -79,46 +76,47 @@ class Music(commands.Cog):
 
 
     async def play_queue(self, ctx):
-        if ctx.voice_client.is_playing():
-            ctx.voice_client.stop()
+        global queue, now_playing
         while len(queue[ctx.message.channel.id]):
             try:
-                player = await YTDLSource.from_url(queue[ctx.message.channel.id][1], loop=self.bot.loop, stream=True)
+                player = await YTDLSource.from_url(queue[ctx.message.channel.id][0], loop=self.bot.loop, stream=True)
                 ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
                 now_playing[ctx.message.channel.id] = player.title
                 await ctx.send(f"```css\n[Now playing]\n {player.title}\n```")
                 queue[ctx.message.channel.id].pop(0)
-            except discord.errors.ClientException: pass
+            except: continue
         await ctx.send(f"```diff\n--- Queue ended\n```")
 
 
     @commands.command(description="streams music")
     async def play(self, ctx, *, url):
-        global queue, tasks
-
-        queue[ctx.message.channel.id] = [""]
+        global queue
+        url = re.sub(r'music.', '', url)
+        queue[ctx.message.channel.id] = []
         try: queue[ctx.message.channel.id].extend(Playlist(url))
         except: queue[ctx.message.channel.id].append(url)
 
         async with ctx.typing():
-            await ctx.send(f"```diff\n+ {len(queue[ctx.message.channel.id])-1} tracks queued\n```")
+            await ctx.send(f"```diff\n+ {len(queue[ctx.message.channel.id])} tracks queued\n```")
 
-        tasks[ctx.message.channel.id].cancel()
-        tasks[ctx.message.channel.id] = asyncio.create_task(self.play_queue(ctx))
+        ctx.voice_client.stop()
 
 
     @commands.command(description="adds songs to queue")
     async def add(self, ctx, *, url):
         global queue
+        url = re.sub(r'music.', '', url)
         if ctx.message.channel.id not in queue:
             queue[ctx.message.channel.id] = []
 
-        if len(queue[ctx.message.channel.id]):
+        old_len = len(queue[ctx.message.channel.id])
+
+        if len(queue[ctx.message.channel.id]) or ctx.voice_client.is_playing():
             try: queue[ctx.message.channel.id].extend(Playlist(url))
             except: queue[ctx.message.channel.id].append(url)
 
             async with ctx.typing():
-                await ctx.send(f"```diff\n+ {len(queue[ctx.message.channel.id])} tracks queued\n```")
+                await ctx.send(f"```diff\n+ {len(queue[ctx.message.channel.id])-old_len} tracks queued\n```")
         else:
             await ctx.send(f"```css\n[The queue is empty send \"-play [arg]\" to start music streaming!]\n```")
 
@@ -130,13 +128,12 @@ class Music(commands.Cog):
         output += f"0. {now_playing[ctx.message.channel.id]} - #now\n"
         for i in queue[ctx.message.channel.id]:
             counter += 1
-            if queue[ctx.message.channel.id].index(i) == 0: continue
             try:
                 response = requests.get(i)
                 response_soup = BeautifulSoup(response.text, "html.parser")
                 title = response_soup.find("meta", itemprop="name")["content"]
             except: title = i
-            output += f"{queue[ctx.message.channel.id].index(i)}. {title}\n"
+            output += f"{queue[ctx.message.channel.id].index(i)+1}. {title}\n"
             if counter == 10: break
         if len(queue[ctx.message.channel.id]) > 10:
             output += "[...]\n"
@@ -147,51 +144,48 @@ class Music(commands.Cog):
 
     @commands.command(description="skips track")
     async def skip(self, ctx):
-        global tasks
-        tasks[ctx.message.channel.id].cancel()
-        tasks[ctx.message.channel.id] = asyncio.create_task(self.play_queue(ctx))
+        ctx.voice_client.stop()
 
 
     @commands.command(description="jumps to track by index")
     async def jump(self, ctx, arg1):
-        global queue, tasks
+        global queue
         try:
-            queue[ctx.message.channel.id][0] = queue[ctx.message.channel.id][int(arg1)]
-            queue[ctx.message.channel.id].pop(int(arg1)+1)
+            queue[ctx.message.channel.id].insert(0, queue[ctx.message.channel.id][int(arg1)-1])
+            queue[ctx.message.channel.id].pop(int(arg1))
         except:
             await ctx.send("```css\n[Invalid Index!]\n```")
             return
-
-        queue[ctx.message.channel.id].insert(0, "")
-        tasks[ctx.message.channel.id].cancel()
-        tasks[ctx.message.channel.id] = asyncio.create_task(self.play_queue(ctx))
+        await asyncio.sleep(1)
+        ctx.voice_client.stop()
 
 
     @commands.command(description="skips track")
     async def shuffle(self, ctx):
-        global queue, tasks
+        global queue
         random.shuffle(queue[ctx.message.channel.id])
-        queue[ctx.message.channel.id].insert(0, "")
-        tasks[ctx.message.channel.id].cancel()
-        tasks[ctx.message.channel.id] = asyncio.create_task(self.play_queue(ctx))
+        await ctx.send("```ini\n[Shuffled]\n```")
+        ctx.voice_client.stop()
 
 
     @commands.command(description="clears queue")
     async def clear(self, ctx):
-        global queue, tasks
+        global queue
         queue[ctx.message.channel.id] = []
         await ctx.send("```diff\n- Queue cleared\n```")
-        tasks[ctx.message.channel.id].cancel()
-        tasks[ctx.message.channel.id] = asyncio.create_task(self.play_queue(ctx))
-
+        ctx.voice_client.stop()
 
     @commands.command(description="stops and disconnects the bot from voice")
     async def leave(self, ctx):
-        global queue, task
-        tasks[ctx.message.channel.id].cancel()
+        global queue
         queue[ctx.message.channel.id] = []
         await ctx.voice_client.disconnect()
 
+
+    @play.after_invoke
+    async def check_voice(self, ctx):
+        if not ctx.voice_client.is_playing():
+            await self.play_queue(ctx)
 
     @play.before_invoke
     @add.before_invoke
@@ -201,11 +195,10 @@ class Music(commands.Cog):
     @leave.before_invoke
     @queue.before_invoke
     async def ensure_voice(self, ctx):
-        global tasks
-        try: tasks[ctx.message.channel.id]
-        except: tasks[ctx.message.channel.id] = asyncio.Task(coro)
         if ctx.voice_client is None:
             if ctx.author.voice:
+                queue[ctx.message.channel.id] = []
+                now_playing[ctx.message.channel.id] = ""
                 await ctx.author.voice.channel.connect()
             else:
                 await ctx.send("```css\n[You are not connected to a voice channel]\n```")

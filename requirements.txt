@@ -4,3 +4,4 @@ PyNaCl
 urllib
 pytube
 bs4
+re
