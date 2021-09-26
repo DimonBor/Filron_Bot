@@ -14,6 +14,7 @@ BOT_TOKEN = os.getenv("DISCORD_TOKEN")
 ytdl_format_options = {
     'format': 'bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+    'postprocessor_args': ['-threads', 2],
     'restrictfilenames': True,
     'noplaylist': True,
     'nocheckcertificate': True,
