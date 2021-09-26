@@ -170,6 +170,7 @@ class Music(commands.Cog):
         global queue
         queue[ctx.message.channel.id] = []
         await ctx.send("```diff\n- Queue cleared\n```")
+        await asyncio.sleep(1)
         ctx.voice_client.stop()
 
 
