@@ -76,13 +76,18 @@ class Music(commands.Cog):
     async def play_queue(self, ctx):
         global queue, now_playing
         while len(queue[ctx.message.channel.id]):
-            try:
-                player = await YTDLSource.from_url(queue[ctx.message.channel.id][0], loop=self.bot.loop, stream=True)
-                ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
-                now_playing[ctx.message.channel.id] = player.title
-                await ctx.send(f"```css\n[Now playing]\n {player.title}\n```")
-                queue[ctx.message.channel.id].pop(0)
-            except: continue
+            player = await YTDLSource.from_url(queue[ctx.message.channel.id][0], loop=self.bot.loop, stream=True)
+            ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+            now_playing[ctx.message.channel.id] = player.title
+            await ctx.send(f"```css\n[Now playing]\n {player.title}\n```")
+            queue[ctx.message.channel.id].pop(0)
+            playing = True
+            while playing:
+                if not ctx.voice_client.is_playing():
+                    playing = False
+                else:
+                    await asyncio.sleep(1)
+                    continue
         await ctx.send(f"```diff\n--- Queue ended\n```")
 
 
