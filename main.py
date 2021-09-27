@@ -43,6 +43,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.title = data.get('title')
         self.url = data.get('url')
 
+
     @classmethod
     async def from_url(cls, url, *, loop=None, stream=False):
         loop = loop or asyncio.get_event_loop()
@@ -163,7 +164,7 @@ class Music(commands.Cog):
         ctx.voice_client.stop()
 
 
-    @commands.command(description="skips track")
+    @commands.command(description="shuffles queue")
     async def shuffle(self, ctx):
         global queue
         random.shuffle(queue[ctx.message.channel.id])
