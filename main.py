@@ -77,6 +77,11 @@ class Music(commands.Cog):
     async def play_queue(self, ctx):
         global queue, now_playing
         while len(queue[ctx.message.channel.id]):
+            channel = bot.get_channel(ctx.message.channel.id)
+            historyMessages = await channel.history(limit=100).flatten()
+            for messageSearched in historyMessages:
+                if now_playing[ctx.message.channel.id] and now_playing[ctx.message.channel.id] in messageSearched.content:
+                    await messageSearched.delete()
             player = await YTDLSource.from_url(queue[ctx.message.channel.id][0], loop=self.bot.loop, stream=True)
             ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
             now_playing[ctx.message.channel.id] = player.title
@@ -216,7 +221,7 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or("-"),
 
 @bot.event
 async def on_ready():
-    print('Logged in as {0} ({0.id})'.format(bot.user))
+    print(f'Logged in as {bot.user} ({bot.user.id})')
     print('------')
 
 bot.add_cog(Music(bot))
