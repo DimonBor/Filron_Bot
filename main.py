@@ -73,7 +73,7 @@ class Music(commands.Cog):
             await ctx.voice_client.move_to(voice_channel)
             vc = ctx.voice_client
 
-        if ctx.voice_client.is_playing(): ctx.voice_client.stop()
+        ctx.voice_client.stop()
 
 
     async def play_queue(self, ctx):
