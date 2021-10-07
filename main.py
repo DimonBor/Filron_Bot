@@ -32,6 +32,7 @@ ffmpeg_options = {
 
 queue = {}
 now_playing = {}
+playing = {}
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 class YTDLSource(discord.PCMVolumeTransformer):
@@ -59,7 +60,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
 
     @commands.command(description="joins a voice channel")
     async def join(self, ctx):
@@ -96,6 +96,7 @@ class Music(commands.Cog):
                 else:
                     await asyncio.sleep(1)
                     continue
+        now_playing[ctx.message.channel.id] = ""
         await ctx.send(f"```diff\n--- Queue ended\n```")
 
 
@@ -183,6 +184,7 @@ class Music(commands.Cog):
     async def clear(self, ctx):
         global queue
         queue[ctx.message.channel.id] = []
+        now_playing[ctx.message.channel.id] = ""
         await ctx.send("```diff\n- Queue cleared\n```")
         await asyncio.sleep(1)
         ctx.voice_client.stop()
@@ -192,12 +194,13 @@ class Music(commands.Cog):
     async def leave(self, ctx):
         global queue
         queue[ctx.message.channel.id] = []
+        now_playing[ctx.message.channel.id] = ""
         await ctx.voice_client.disconnect()
 
 
     @play.after_invoke
     async def check_voice(self, ctx):
-        if not ctx.voice_client.is_playing():
+        if not now_playing[ctx.message.channel.id]:
             await self.play_queue(ctx)
 
     @play.before_invoke
