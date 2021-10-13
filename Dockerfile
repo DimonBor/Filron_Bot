@@ -8,8 +8,8 @@ ENV YARL_NO_EXTENSIONS=1
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-RUN apt update 
-RUN apt install ffmpeg --no-install-recommends
+RUN apt update
+RUN apt install ffmpeg -y --no-install-recommends 
 
 COPY . .
 
