@@ -12,9 +12,9 @@ from bs4 import BeautifulSoup
 BOT_TOKEN = os.getenv("DISCORD_TOKEN")
 
 ytdl_format_options = {
-    'format': 'bestaudio/best',
+    'format': 'worstaudio/worst',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
-    'postprocessor_args': ['-threads', 2],
+    'postprocessor_args': ['-threads', 4],
     'restrictfilenames': True,
     'noplaylist': True,
     'nocheckcertificate': True,
