@@ -19,6 +19,8 @@ COPY --from=builder /root/.local /root/.local
 RUN apt update
 RUN apt install ffmpeg -y --no-install-recommends
 
+ENV PYTHONUNBUFFERED=1
+
 COPY . .
 
 CMD [ "python3", "main.py"]
