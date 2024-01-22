@@ -1,5 +1,6 @@
 import os
 import re
+import glob
 import asyncio
 import discord
 import random
@@ -224,6 +225,8 @@ async def on_ready():
 
 
 async def main():
+    for f in glob.glob("youtube*.webm"):
+        os.remove(f)
     await bot.add_cog(Music(bot))
     await bot.start(BOT_TOKEN)
 
