@@ -1,4 +1,4 @@
-FROM python:3.8-buster as builder
+FROM python:3.10-buster as builder
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ COPY requirements.txt requirements.txt
 
 RUN pip3 install --user -r requirements.txt
 
-FROM python:3.8-slim-buster AS build-image
+FROM python:3.10-slim-buster AS build-image
 
 COPY --from=builder /root/.local /root/.local
 
