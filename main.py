@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import glob
@@ -35,6 +36,7 @@ queue = {}
 now_playing = {}
 playing = {}
 ytdl = yt_dlp.YoutubeDL(ytdl_format_options)
+discord.utils.setup_logging(level=logging.DEBUG)
 
 
 class YTDLSource(discord.PCMVolumeTransformer):
