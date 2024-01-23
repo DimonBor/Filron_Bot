@@ -86,12 +86,16 @@ class Music(commands.Cog, name='Music'):
             await ctx.send(f"```css\n[Now playing]\n {player.title}\n```")
             queue[ctx.message.channel.id].pop(0)
             while True:
-                if not ctx.voice_client.is_playing():
-                    os.remove(player.filename)
+                try:
+                    if not ctx.voice_client.is_playing():
+                        os.remove(player.filename)
+                        break
+                    else:
+                        await asyncio.sleep(1)
+                        continue
+                except AttributeError:
+                    await self.ensure_voice(ctx)
                     break
-                else:
-                    await asyncio.sleep(1)
-                    continue
         now_playing[ctx.message.channel.id] = ""
         await ctx.send(f"```diff\n--- Queue ended\n```")
 
