@@ -94,7 +94,7 @@ class Music(commands.Cog, name='Music'):
                         await asyncio.sleep(1)
                         continue
                 except AttributeError:
-                    await self.ensure_voice(ctx)
+                    await ctx.author.voice.channel.connect()
                     break
         now_playing[ctx.message.channel.id] = ""
         await ctx.send(f"```diff\n--- Queue ended\n```")
