@@ -91,7 +91,6 @@ class Music(commands.Cog, name='Music'):
                         os.remove(player.filename)
                         break
                     else:
-                        await asyncio.sleep(1)
                         continue
                 except AttributeError:
                     await ctx.author.voice.channel.connect()
@@ -192,6 +191,8 @@ class Music(commands.Cog, name='Music'):
         global queue
         queue[ctx.message.channel.id] = []
         now_playing[ctx.message.channel.id] = ""
+        await ctx.voice_client.stop()
+        await asyncio.sleep(1)
         await ctx.voice_client.disconnect()
 
     @play.after_invoke
