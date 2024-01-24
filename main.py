@@ -136,6 +136,7 @@ class Music(commands.Cog, name='Music'):
 
     @commands.command(description="shows queue")
     async def queue(self, ctx):
+        global queue, now_playing
         output = "[Queue]\n"
         counter = 0
         output += f"0. {now_playing[ctx.message.channel.id]} - #now\n"
@@ -180,7 +181,7 @@ class Music(commands.Cog, name='Music'):
 
     @commands.command(description="clears queue")
     async def clear(self, ctx):
-        global queue
+        global queue, now_playing
         queue[ctx.message.channel.id] = []
         now_playing[ctx.message.channel.id] = ""
         await ctx.send("```diff\n- Queue cleared\n```")
@@ -189,7 +190,7 @@ class Music(commands.Cog, name='Music'):
 
     @commands.command(description="stops and disconnects the bot from voice")
     async def leave(self, ctx):
-        global queue
+        global queue, now_playing
         queue[ctx.message.channel.id] = []
         now_playing[ctx.message.channel.id] = ""
         await ctx.voice_client.stop()
@@ -198,6 +199,7 @@ class Music(commands.Cog, name='Music'):
 
     @play.after_invoke
     async def check_voice(self, ctx):
+        global now_playing
         if not now_playing[ctx.message.channel.id]:
             await self.play_queue(ctx)
 
@@ -210,6 +212,7 @@ class Music(commands.Cog, name='Music'):
     @leave.before_invoke
     @queue.before_invoke
     async def ensure_voice(self, ctx):
+        global queue, now_playing
         if not ctx.author.voice:
             await ctx.send("```css\n[You are not connected to a voice channel]\n```")
             raise commands.CommandError("Author not connected to a voice channel.")
