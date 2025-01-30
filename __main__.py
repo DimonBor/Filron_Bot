@@ -25,7 +25,8 @@ ytdl_format_options = {
     'verbose': True,
     'no_warnings': True,
     'default_search': 'auto',
-    'source_address': '0.0.0.0'  # bind to ipv4 since ipv6 addresses cause issues sometimes
+    'source_address': '0.0.0.0',  # bind to ipv4 since ipv6 addresses cause issues sometimes
+    'cookies': 'cookies.txt'
 }
 
 ffmpeg_options = {

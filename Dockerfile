@@ -1,7 +1,5 @@
 FROM python:3.10-buster as builder
 
-WORKDIR /app
-
 ENV MULTIDICT_NO_EXTENSIONS=1
 ENV YARL_NO_EXTENSIONS=1
 
@@ -21,6 +19,6 @@ RUN apt install ffmpeg -y --no-install-recommends
 
 ENV PYTHONUNBUFFERED=1
 
-COPY . .
+COPY . ./app/
 
-CMD [ "python3", "main.py"]
+CMD [ "python3", "-m", "app"]
