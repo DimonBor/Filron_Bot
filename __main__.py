@@ -7,7 +7,6 @@ import discord
 import random
 import requests
 import yt_dlp
-from pytube import Playlist
 from discord.ext import commands
 from bs4 import BeautifulSoup
 
@@ -107,8 +106,18 @@ class Music(commands.Cog, name='Music'):
         url = re.sub(r'music.', '', url)
         queue[ctx.message.channel.id] = []
         try:
-            queue[ctx.message.channel.id].extend(Playlist(url))
-        except:
+            playlist_opts = {
+                    'quiet': True,
+                    'extract_flat': True,
+                    'skip_download': True,
+                    'cookiefile': '/app/cookies.txt'
+                }
+            with yt_dlp.YoutubeDL(playlist_opts) as ydl:
+                info_dict = ydl.extract_info(url, download=False)
+                queue[ctx.message.channel.id].extend(
+                    [entry['url'] for entry in info_dict.get('entries', [])]
+                    )
+        except Exception:
             queue[ctx.message.channel.id].append(url)
 
         async with ctx.typing():
@@ -127,8 +136,18 @@ class Music(commands.Cog, name='Music'):
 
         if len(queue[ctx.message.channel.id]) or ctx.voice_client.is_playing():
             try:
-                queue[ctx.message.channel.id].extend(Playlist(url))
-            except:
+                playlist_opts = {
+                    'quiet': True,
+                    'extract_flat': True,
+                    'skip_download': True,
+                    'cookiefile': '/app/cookies.txt'
+                }
+                with yt_dlp.YoutubeDL(playlist_opts) as ydl:
+                    info_dict = ydl.extract_info(url, download=False)
+                    queue[ctx.message.channel.id].extend(
+                        [entry['url'] for entry in info_dict.get('entries', [])]
+                        )
+            except Exception:
                 queue[ctx.message.channel.id].append(url)
 
             async with ctx.typing():
