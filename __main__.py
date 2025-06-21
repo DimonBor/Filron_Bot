@@ -5,10 +5,8 @@ import glob
 import asyncio
 import discord
 import random
-import requests
 import yt_dlp
 from discord.ext import commands
-from bs4 import BeautifulSoup
 
 BOT_TOKEN = os.getenv("DISCORD_TOKEN")
 
@@ -161,20 +159,25 @@ class Music(commands.Cog, name='Music'):
         output = "[Queue]\n"
         counter = 0
         output += f"0. {now_playing[ctx.message.channel.id]} - #now\n"
-        for i in queue[ctx.message.channel.id]:
-            counter += 1
-            try:
-                response = requests.get(i)
-                response_soup = BeautifulSoup(response.text, "html.parser")
-                title = response_soup.find("meta", itemprop="name")["content"]
-            except:
-                title = i
-            output += f"{queue[ctx.message.channel.id].index(i) + 1}. {title}\n"
-            if counter == 10: break
-        if len(queue[ctx.message.channel.id]) > 10:
-            output += "[...]\n"
-        output += f"Total queued: {len(queue[ctx.message.channel.id])}"
         async with ctx.typing():
+            for i in queue[ctx.message.channel.id]:
+                counter += 1
+                try:
+                    info_opts = {
+                        'quiet': True,
+                        'skip_download': True,
+                        'cookiefile': '/app/cookies.txt'
+                    }
+                    with yt_dlp.YoutubeDL(info_opts) as ydl:
+                        info = ydl.extract_info(i, download=False)
+                        title = info['title']
+                except Exception:
+                    title = i
+                output += f"{queue[ctx.message.channel.id].index(i) + 1}. {title}\n"
+                if counter == 10: break
+            if len(queue[ctx.message.channel.id]) > 10:
+                output += "[...]\n"
+            output += f"Total queued: {len(queue[ctx.message.channel.id])}"
             await ctx.send(f"```css\n{output}\n```")
 
     @commands.command(description="skips track")
