@@ -1,4 +1,4 @@
-FROM python:3.10-buster as builder
+FROM python:3.10-bookworm as builder
 
 ENV MULTIDICT_NO_EXTENSIONS=1
 ENV YARL_NO_EXTENSIONS=1
@@ -10,7 +10,7 @@ COPY requirements.txt requirements.txt
 
 RUN pip3 install --user -r requirements.txt
 
-FROM python:3.10-slim-buster AS build-image
+FROM python:3.10-slim-bookworm AS build-image
 
 COPY --from=builder /root/.local /root/.local
 
