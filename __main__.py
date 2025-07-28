@@ -112,9 +112,10 @@ class Music(commands.Cog, name='Music'):
                 }
             with yt_dlp.YoutubeDL(playlist_opts) as ydl:
                 info_dict = ydl.extract_info(url, download=False)
-                queue[ctx.message.channel.id].extend(
-                    [entry['url'] for entry in info_dict.get('entries', [])]
-                    )
+                entries = [entry['url'] for entry in info_dict.get('entries', [])]
+                if not entries:
+                    raise Exception
+                queue[ctx.message.channel.id].extend(entries)
         except Exception:
             queue[ctx.message.channel.id].append(url)
 
@@ -142,9 +143,10 @@ class Music(commands.Cog, name='Music'):
                 }
                 with yt_dlp.YoutubeDL(playlist_opts) as ydl:
                     info_dict = ydl.extract_info(url, download=False)
-                    queue[ctx.message.channel.id].extend(
-                        [entry['url'] for entry in info_dict.get('entries', [])]
-                        )
+                    entries = [entry['url'] for entry in info_dict.get('entries', [])]
+                    if not entries:
+                        raise Exception
+                    queue[ctx.message.channel.id].extend(entries)
             except Exception:
                 queue[ctx.message.channel.id].append(url)
 
